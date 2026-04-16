@@ -666,6 +666,7 @@ body {
       <button class="btn btn-outline btn-sm" onclick="showPage('home')">&#x2190; 返回修改</button>
       <button class="btn btn-outline btn-sm" onclick="copyLesson()">&#x1F4CB; 复制教案</button>
       <button class="btn btn-outline btn-sm" onclick="exportTxt()">&#x1F4E5; 导出TXT</button>
+      <button class="btn btn-outline btn-sm" onclick="exportDoc()">&#x1F4C4; 导出Word</button>
       <button class="btn btn-accent btn-sm" onclick="saveToLibrary()">&#x2B50; 收藏教案</button>
     </div>
 
@@ -1258,6 +1259,7 @@ function generateLesson() {
 
     // 渲染教案
     renderLesson(lesson);
+    currentLessonData = lesson;
     showPage('result');
   }, 2500);
 }
@@ -1407,8 +1409,163 @@ function exportTxt() {
   showToast('教案已导出为TXT文件');
 }
 
+// ========== 导出Word文档 ==========
+function exportDoc() {
+  const lesson = currentLessonData;
+  if (!lesson) {
+    showToast('没有可导出的教案数据');
+    return;
+  }
+  const info = lesson.basicInfo;
+
+  // 构建Word文档HTML内容
+  let docContent = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+  body { font-family: "宋体", SimSun, serif; font-size: 12pt; line-height: 1.8; margin: 2cm; }
+  h1 { font-family: "黑体", SimHei, sans-serif; font-size: 18pt; text-align: center; margin-bottom: 6pt; }
+  h2 { font-family: "黑体", SimHei, sans-serif; font-size: 14pt; margin-top: 16pt; margin-bottom: 6pt; border-bottom: 1.5pt solid #333; padding-bottom: 4pt; }
+  h3 { font-family: "楷体", KaiTi, serif; font-size: 13pt; margin-top: 12pt; margin-bottom: 4pt; }
+  h4 { font-family: "楷体", KaiTi, serif; font-size: 12pt; margin-top: 8pt; margin-bottom: 4pt; }
+  p { text-indent: 0; margin: 4pt 0; }
+  ul, ol { margin: 4pt 0 4pt 24pt; }
+  li { margin: 2pt 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8pt 0; }
+  td, th { border: 1pt solid #333; padding: 6pt 8pt; font-size: 12pt; vertical-align: top; }
+  th { background-color: #E8F5E9; font-family: "黑体", SimHei, sans-serif; }
+  .info-table td:first-child { width: 100pt; font-weight: bold; background-color: #F5F5F5; }
+  .highlight-box { background-color: #FFF8E1; border: 1pt solid #FFE082; padding: 8pt; margin: 6pt 0; }
+  .highlight-box.danger { background-color: #FFEBEE; border-color: #EF9A9A; }
+  .highlight-box.success { background-color: #E8F5E9; border-color: #A5D6A7; }
+  .highlight-box.info { background-color: #E3F2FD; border-color: #90CAF9; }
+  .script-box { background-color: #F5F5F0; border-left: 3pt solid #FF9800; padding: 8pt 12pt; margin: 6pt 0; }
+  .board-box { background-color: #2C3E50; color: white; padding: 12pt; font-family: "楷体", KaiTi, serif; line-height: 2; }
+  .footer { margin-top: 24pt; text-align: right; color: #666; font-size: 10pt; }
+</style>
+</head>
+<body>`;
+
+  // 标题
+  docContent += `<h1>教 案</h1>`;
+
+  // 基本信息
+  docContent += `<h2>一、基本信息</h2>`;
+  docContent += `<table class="info-table">
+    <tr><td>学科</td><td>${info.subject}</td><td>年级</td><td>${info.grade}</td></tr>
+    <tr><td>教材版本</td><td>${info.textbook}</td><td>课题</td><td>${info.chapter}</td></tr>
+    <tr><td>课时</td><td>${info.duration}</td><td>课型</td><td>${info.lessonType}</td></tr>
+    ${info.level ? `<tr><td>学生基础</td><td>${info.level}</td><td>教案风格</td><td>${info.style ? info.style + '版' : '标准版'}</td></tr>` : ''}
+  </table>`;
+
+  // 教学目标
+  docContent += `<h2>二、教学目标</h2>`;
+  info.objectives.forEach((obj, i) => {
+    const labels = ['知识目标', '能力目标', '情感目标'];
+    docContent += `<p><b>${labels[i] || '目标' + (i+1)}：</b>${obj}</p>`;
+  });
+
+  // 重点难点
+  docContent += `<h2>三、重点与难点</h2>`;
+  docContent += `<div class="highlight-box success"><p><b>教学重点：</b>${info.keyPoints}</p></div>`;
+  docContent += `<div class="highlight-box danger"><p><b>教学难点：</b>${info.difficulties}</p></div>`;
+
+  // 易错点
+  if (info.commonErrors && info.commonErrors.length > 0) {
+    docContent += `<h2>四、易错点提醒</h2>`;
+    docContent += `<div class="highlight-box info"><ol>`;
+    info.commonErrors.forEach(err => { docContent += `<li>${err}</li>`; });
+    docContent += `</ol></div>`;
+  }
+
+  // 教学准备
+  docContent += `<h2>五、教学准备</h2>`;
+  docContent += `<p><b>教师准备：</b>${lesson.preparation.teacher}</p>`;
+  docContent += `<p><b>学生准备：</b>${lesson.preparation.student}</p>`;
+  if (lesson.preparation.localMaterials) {
+    docContent += `<div class="highlight-box"><p><b>本地化材料：</b>${lesson.preparation.localMaterials}</p></div>`;
+  }
+
+  // 教学过程
+  docContent += `<h2>六、教学过程</h2>`;
+  lesson.process.forEach((step, idx) => {
+    docContent += `<h3>${step.stage}</h3>`;
+    // 教学内容
+    const contentLines = step.content.split('\n').filter(l => l.trim());
+    contentLines.forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed.match(/^\d+[\.\、]/)) {
+        docContent += `<p style="text-indent:24pt;">${trimmed}</p>`;
+      } else {
+        docContent += `<p>${trimmed}</p>`;
+      }
+    });
+
+    // 讲解脚本
+    if (step.script && (info.style === '详细' || info.style === '公开课' || !info.style || info.style === '标准')) {
+      docContent += `<div class="script-box"><p><b>【教师讲解脚本】</b></p>`;
+      step.script.split('\n').filter(l => l.trim()).forEach(line => {
+        docContent += `<p>${line.trim()}</p>`;
+      });
+      docContent += `</div>`;
+    }
+
+    // 课堂提问
+    if (step.questions && step.questions.length > 0) {
+      docContent += `<h4>课堂提问清单</h4><ol>`;
+      step.questions.forEach(q => { docContent += `<li>${q}</li>`; });
+      docContent += `</ol>`;
+    }
+  });
+
+  // 板书设计
+  docContent += `<h2>七、板书设计</h2>`;
+  docContent += `<div class="board-box">`;
+  docContent += `<p style="text-align:center;font-size:14pt;"><b>${info.chapter}</b></p>`;
+  lesson.boardDesign.split('\n').filter(l => l.trim()).forEach(line => {
+    docContent += `<p>${line}</p>`;
+  });
+  docContent += `</div>`;
+
+  // 随堂练习
+  docContent += `<h2>八、随堂练习题</h2>`;
+  lesson.exercises.forEach(ex => {
+    docContent += `<h3>${ex.type}</h3><ol>`;
+    ex.questions.forEach(q => { docContent += `<li>${q}</li>`; });
+    docContent += `</ol>`;
+  });
+
+  // 乡村教学建议
+  if (lesson.localizedTips && lesson.localizedTips.length > 0) {
+    docContent += `<h2>九、乡村教学建议</h2>`;
+    docContent += `<div class="highlight-box success"><ol>`;
+    lesson.localizedTips.forEach(tip => { docContent += `<li>${tip}</li>`; });
+    docContent += `</ol></div>`;
+  }
+
+  // 页脚
+  docContent += `<div class="footer">乡村教师AI教案助手 自动生成</div>`;
+  docContent += `</body></html>`;
+
+  // 生成并下载.doc文件
+  const blob = new Blob(['\ufeff' + docContent], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const filename = `${info.subject || '教案'}_${info.grade || ''}_${info.chapter || '未命名'}.doc`;
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('教案已导出为Word文档');
+}
+
 // 保存当前教案信息用于导出
 let currentLessonInfo = {};
+let currentLessonData = null;
 
 // ========== 收藏到教案库 ==========
 function saveToLibrary() {
