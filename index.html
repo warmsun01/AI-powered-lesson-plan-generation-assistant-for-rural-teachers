@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>乡村教师AI教案助手</title>
+<style>
+/* ========== 全局样式 ========== */
+:root {
+  --primary: #4CAF50;
+  --primary-dark: #388E3C;
+  --primary-light: #C8E6C9;
+  --accent: #FF9800;
+  --accent-dark: #F57C00;
+  --accent-light: #FFE0B2;
+  --bg: #F5F5F0;
+  --card-bg: #FFFFFF;
+  --text: #333333;
+  --text-light: #666666;
+  --border: #E0E0E0;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ========== 头部 ========== */
+.app-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 16px 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.app-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.app-header p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.header-nav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.header-nav button {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.header-nav button:hover, .header-nav button.active {
+  background: rgba(255,255,255,0.35);
+}
+
+/* ========== 主容器 ========== */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ========== 页面切换 ========== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ========== 卡片 ========== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card h2 {
+  font-size: 18px;
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+/* ========== 表单 ========== */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 17px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--text);
+  transition: border-color 0.3s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.form-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* ========== 按钮 ========== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+  width: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  box-shadow: 0 4px 12px rgba(76,175,80,0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76,175,80,0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: white;
+  box-shadow: 0 4px 12px rgba(255,152,0,0.3);
+}
+
+.btn-accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255,152,0,0.4);
+}
+
+.btn-outline {
+  background: white;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-outline:hover {
+  background: var(--primary-light);
+}
+
+.btn-sm {
+  padding: 10px 18px;
+  font-size: 15px;
+  width: auto;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.btn-group .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* ========== 选项标签 ========== */
+.option-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.option-tag {
+  padding: 10px 18px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: white;
+  color: var(--text);
+}
+
+.option-tag:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.option-tag.selected {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+/* ========== 加载动画 ========== */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.92);
+  z-index: 200;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loading-overlay.show {
+  display: flex;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid var(--primary-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 18px;
+  color: var(--text-light);
+  text-align: center;
+}
+
+.loading-tips {
+  font-size: 14px;
+  color: var(--text-light);
+  text-align: center;
+  max-width: 300px;
+}
+
+/* ========== 教案展示 ========== */
+.lesson-output {
+  line-height: 1.8;
+}
+
+.lesson-output h2 {
+  font-size: 20px;
+  color: var(--primary-dark);
+  margin: 24px 0 12px;
+  padding: 10px 14px;
+  background: var(--primary-light);
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+}
+
+.lesson-output h3 {
+  font-size: 17px;
+  color: var(--accent-dark);
+  margin: 18px 0 8px;
+}
+
+.lesson-output h4 {
+  font-size: 16px;
+  color: var(--text);
+  margin: 12px 0 6px;
+}
+
+.lesson-output p {
+  margin-bottom: 10px;
+  text-align: justify;
+}
+
+.lesson-output ul, .lesson-output ol {
+  margin: 8px 0 12px 20px;
+}
+
+.lesson-output li {
+  margin-bottom: 6px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.info-item {
+  background: #F9F9F6;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.info-item strong {
+  color: var(--primary-dark);
+}
+
+.highlight-box {
+  background: #FFF8E1;
+  border: 1px solid #FFE082;
+  border-radius: 8px;
+  padding: 14px;
+  margin: 12px 0;
+}
+
+.highlight-box.danger {
+  background: #FFEBEE;
+  border-color: #EF9A9A;
+}
+
+.highlight-box.info {
+  background: #E3F2FD;
+  border-color: #90CAF9;
+}
+
+.highlight-box.success {
+  background: #E8F5E9;
+  border-color: #A5D6A7;
+}
+
+.script-box {
+  background: #F5F5F0;
+  border-left: 4px solid var(--accent);
+  padding: 14px 16px;
+  margin: 10px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.board-design {
+  background: #2C3E50;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 12px 0;
+  font-family: "KaiTi", "STKaiti", serif;
+  line-height: 2;
+  white-space: pre-wrap;
+}
+
+.board-design .board-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed rgba(255,255,255,0.4);
+}
+
+/* ========== 教案库 ========== */
+.library-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+}
+
+.library-empty .icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.library-item {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.library-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.library-item h3 {
+  font-size: 16px;
+  color: var(--primary-dark);
+  margin-bottom: 6px;
+}
+
+.library-item .meta {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+
+.library-item .actions {
+  display: flex;
+  gap: 8px;
+}
+
+.library-item .actions button {
+  padding: 6px 14px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.library-item .actions button:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
+.library-item .actions button.delete:hover {
+  background: #FFEBEE;
+  border-color: #EF5350;
+  color: #D32F2F;
+}
+
+.library-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.library-filter button {
+  padding: 8px 16px;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.library-filter button.active,
+.library-filter button:hover {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+/* ========== Toast提示 ========== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #333;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  z-index: 300;
+  transition: transform 0.3s;
+  white-space: nowrap;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ========== 工具栏 ========== */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  position: sticky;
+  top: 80px;
+  z-index: 50;
+  background: var(--bg);
+  padding: 8px 0;
+}
+
+.toolbar .btn {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 600px) {
+  .app-header h1 { font-size: 20px; }
+  .container { padding: 12px; }
+  .card { padding: 16px; }
+  .info-grid { grid-template-columns: 1fr; }
+  .btn-group { flex-direction: column; }
+  .btn-group .btn { min-width: 100%; }
+  .toolbar { flex-direction: column; }
+  .toolbar .btn { min-width: 100%; }
+  .header-nav button { padding: 6px 14px; font-size: 14px; }
+}
+
+/* ========== 滚动条美化 ========== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+/* ========== 打印样式 ========== */
+@media print {
+  .app-header, .toolbar, .header-nav, .btn-group { display: none !important; }
+  .container { max-width: 100%; padding: 0; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+
+<!-- 头部导航 -->
+<header class="app-header">
+  <h1>乡村教师AI教案助手</h1>
+  <p>让每一堂课都精彩</p>
+  <nav class="header-nav">
+    <button class="active" onclick="showPage('home')">生成教案</button>
+    <button onclick="showPage('library')">我的教案库</button>
+  </nav>
+</header>
+
+<!-- 加载动画 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">正在为您生成教案...</div>
+  <div class="loading-tips" id="loadingTip">AI正在分析教材内容，为您量身定制教案</div>
+</div>
+
+<!-- Toast提示 -->
+<div class="toast" id="toast"></div>
+
+<!-- 主容器 -->
+<div class="container">
+
+  <!-- ========== 首页：生成教案 ========== -->
+  <div class="page active" id="page-home">
+    <div class="card">
+      <h2>第一步：填写课程信息</h2>
+      <div class="form-group">
+        <label>学科</label>
+        <select id="subject">
+          <option value="">请选择学科</option>
+          <option value="语文">语文</option>
+          <option value="数学">数学</option>
+          <option value="英语">英语</option>
+          <option value="科学">科学</option>
+          <option value="道德与法治">道德与法治</option>
+          <option value="音乐">音乐</option>
+          <option value="美术">美术</option>
+          <option value="体育">体育</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>年级</label>
+        <select id="grade">
+          <option value="">请选择年级</option>
+          <option value="一年级">一年级</option>
+          <option value="二年级">二年级</option>
+          <option value="三年级">三年级</option>
+          <option value="四年级">四年级</option>
+          <option value="五年级">五年级</option>
+          <option value="六年级">六年级</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>教材版本</label>
+        <select id="textbook">
+          <option value="">请先选择学科</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>章节/课题名称</label>
+        <input type="text" id="chapter" placeholder="例如：三位数乘两位数、荷花、Unit3 What would you like?">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>第二步：选择教案选项</h2>
+      <div class="form-group">
+        <label>课时时长</label>
+        <div class="option-tags" data-name="duration">
+          <span class="option-tag selected" data-value="40分钟">40分钟（标准）</span>
+          <span class="option-tag" data-value="35分钟">35分钟</span>
+          <span class="option-tag" data-value="45分钟">45分钟</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>学生基础</label>
+        <div class="option-tags" data-name="level">
+          <span class="option-tag selected" data-value="中等">中等水平</span>
+          <span class="option-tag" data-value="较好">基础较好</span>
+          <span class="option-tag" data-value="薄弱">基础薄弱</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>教案风格</label>
+        <div class="option-tags" data-name="style">
+          <span class="option-tag selected" data-value="标准">标准版</span>
+          <span class="option-tag" data-value="简化">简化版（新手教师）</span>
+          <span class="option-tag" data-value="详细">详细版（含讲解脚本）</span>
+          <span class="option-tag" data-value="本地化">本地化版（乡土案例）</span>
+          <span class="option-tag" data-value="公开课">公开课版</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="generateLesson()" style="margin-bottom:16px;">
+      &#x2728; 一键生成教案
+    </button>
+  </div>
+
+  <!-- ========== 教案展示页 ========== -->
+  <div class="page" id="page-result">
+    <div class="toolbar">
+      <button class="btn btn-outline btn-sm" onclick="showPage('home')">&#x2190; 返回修改</button>
+      <button class="btn btn-outline btn-sm" onclick="copyLesson()">&#x1F4CB; 复制教案</button>
+      <button class="btn btn-outline btn-sm" onclick="exportTxt()">&#x1F4E5; 导出TXT</button>
+      <button class="btn btn-accent btn-sm" onclick="saveToLibrary()">&#x2B50; 收藏教案</button>
+    </div>
+
+    <div class="card">
+      <div class="lesson-output" id="lessonOutput"></div>
+    </div>
+
+    <div class="btn-group" style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="regenerateLesson('简化')">简化版</button>
+      <button class="btn btn-outline" onclick="regenerateLesson('详细')">详细版</button>
+      <button class="btn btn-outline" onclick="regenerateLesson('本地化')">本地化版</button>
+      <button class="btn btn-outline" onclick="regenerateLesson('公开课')">公开课版</button>
+    </div>
+  </div>
+
+  <!-- ========== 教案库页 ========== -->
+  <div class="page" id="page-library">
+    <div class="card">
+      <h2>我的教案库</h2>
+      <div class="library-filter" id="libraryFilter">
+        <button class="active" data-filter="all" onclick="filterLibrary('all', this)">全部</button>
+        <button data-filter="语文" onclick="filterLibrary('语文', this)">语文</button>
+        <button data-filter="数学" onclick="filterLibrary('数学', this)">数学</button>
+        <button data-filter="英语" onclick="filterLibrary('英语', this)">英语</button>
+        <button data-filter="其他" onclick="filterLibrary('其他', this)">其他</button>
+      </div>
+      <div id="libraryList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ========== 学科-教材版本联动 ==========
+const textbookMap = {
+  '语文': [
+    { value: '部编版', label: '部编版' },
+    { value: '苏教版', label: '苏教版' },
+    { value: '冀教版', label: '冀教版' },
+    { value: '人教版', label: '人教版' }
+  ],
+  '数学': [
+    { value: '人教版', label: '人教版' },
+    { value: '北师大版', label: '北师大版' },
+    { value: '苏教版', label: '苏教版' },
+    { value: '冀教版', label: '冀教版' }
+  ],
+  '英语': [
+    { value: '人教版', label: '人教版（PEP）' },
+    { value: '外研版', label: '外研版' },
+    { value: '冀教版', label: '冀教版' }
+  ],
+  '科学': [
+    { value: '教科版', label: '教科版' },
+    { value: '苏教版', label: '苏教版' },
+    { value: '青岛版', label: '青岛版' }
+  ],
+  '道德与法治': [
+    { value: '部编版', label: '部编版' },
+    { value: '人教版', label: '人教版' }
+  ],
+  '音乐': [
+    { value: '人教版', label: '人教版' },
+    { value: '人音版', label: '人音版' }
+  ],
+  '美术': [
+    { value: '人教版', label: '人教版' },
+    { value: '人美版', label: '人美版' }
+  ],
+  '体育': [
+    { value: '人教版', label: '人教版' },
+    { value: '教科版', label: '教科版' }
+  ]
+};
+
+function updateTextbookOptions() {
+  const subject = document.getElementById('subject').value;
+  const textbookSelect = document.getElementById('textbook');
+  // 保留当前选中值
+  const prevValue = textbookSelect.value;
+
+  textbookSelect.innerHTML = '';
+
+  if (!subject) {
+    textbookSelect.innerHTML = '<option value="">请先选择学科</option>';
+    return;
+  }
+
+  const versions = textbookMap[subject] || [];
+  textbookSelect.innerHTML = '<option value="">请选择教材版本</option>';
+  versions.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.value;
+    opt.textContent = v.label;
+    textbookSelect.appendChild(opt);
+  });
+
+  // 如果之前选中的版本在新列表中存在，则保持选中
+  if (prevValue && versions.some(v => v.value === prevValue)) {
+    textbookSelect.value = prevValue;
+  }
+}
+
+document.getElementById('subject').addEventListener('change', function() {
+  updateTextbookOptions();
+});
+
+// ========== 选项标签交互 ==========
+document.querySelectorAll('.option-tags').forEach(group => {
+  group.querySelectorAll('.option-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      group.querySelectorAll('.option-tag').forEach(t => t.classList.remove('selected'));
+      tag.classList.add('selected');
+    });
+  });
+});
+
+// ========== 页面切换 ==========
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.header-nav button').forEach(b => b.classList.remove('active'));
+  if (pageId === 'home') {
+    document.querySelectorAll('.header-nav button')[0].classList.add('active');
+  } else if (pageId === 'library') {
+    document.querySelectorAll('.header-nav button')[1].classList.add('active');
+    renderLibrary();
+  }
+  window.scrollTo(0, 0);
+}
+
+// ========== Toast提示 ==========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ========== 获取选项值 ==========
+function getOption(name) {
+  const group = document.querySelector(`.option-tags[data-name="${name}"]`);
+  if (!group) return '';
+  const sel = group.querySelector('.option-tag.selected');
+  return sel ? sel.dataset.value : '';
+}
+
+// ========== 模拟教案数据库 ==========
+const mockLessons = {
+  '数学_四年级_北师大版_三位数乘两位数': {
+    basicInfo: {
+      subject: '数学', grade: '四年级', textbook: '北师大版',
+      chapter: '三位数乘两位数', duration: '40分钟', lessonType: '新授课',
+      objectives: [
+        '掌握三位数乘两位数的笔算方法，能正确进行计算',
+        '理解三位数乘两位数的算理，知道每一步计算的含义',
+        '能运用所学知识解决生活中的实际问题'
+      ],
+      keyPoints: '掌握三位数乘两位数的竖式计算方法，特别是用两位数个位、十位上的数分别去乘三位数的规则。',
+      difficulties: '理解用两位数十位上的数去乘三位数时，所得积的末位要和十位对齐的道理。',
+      commonErrors: [
+        '用十位上的数去乘时，积的末位没有和十位对齐',
+        '进位时忘记加上进位的数',
+        '乘法口诀不熟练导致计算错误',
+        '漏乘：只乘了个位或只乘了十位'
+      ]
+    },
+    preparation: {
+      teacher: '多媒体课件、小黑板、口算卡片、实物教具（如一箱苹果有12个，共145箱的图片）',
+      student: '练习本、铅笔、直尺',
+      localMaterials: '可提前让学生调查家里水稻亩产量或家里养鸡鸭的数量，课堂上用真实数据计算'
+    },
+    process: [
+      {
+        stage: '一、复习导入（5分钟）',
+        content: '1. 口算练习（教师出示口算卡片）\n   12×3=  23×2=  45×2=  34×10=\n   120×3= 230×2= 45×20= 340×10=\n\n2. 笔算练习（请两名同学板演）\n   23×15=    45×23=\n\n3. 导入新课\n   教师："同学们，我们已经学过了两位数乘两位数，今天我们来挑战更难的——三位数乘两位数。"',
+        script: '同学们，请大家看黑板，我们先来做几道口算题。准备好了吗？第一题，12乘3等于多少？对，36！大家算得真快。\n\n再看这两道竖式计算题，请两位同学到黑板上来做，其他同学在练习本上做。\n\n（巡视后）很好，大部分同学都做对了。现在老师要考考大家，如果被乘数变成三位数，你们还会算吗？今天我们就来学习"三位数乘两位数"。',
+        questions: [
+          '23×15，先算什么，再算什么？',
+          '竖式计算时，第二个因数的十位上的1乘23，得数的末位要写在哪一位上？为什么？',
+          '如果被乘数变成三位数，比如123×15，你觉得该怎么算？'
+        ]
+      },
+      {
+        stage: '二、探究新知（15分钟）',
+        content: '1. 创设情境\n   出示问题：王叔叔家种了145棵苹果树，平均每棵树收苹果12千克。一共收了多少千克苹果？\n\n2. 列式\n   学生列出算式：145×12=\n\n3. 估算\n   教师：先估一估，大约是多少？\n   把145看作150，12看作10，150×10=1500，所以大约是1500千克。\n\n4. 探究算法\n   方法一：拆分法\n   145×12 = 145×10 + 145×2 = 1450 + 290 = 1740\n   方法二：竖式计算\n   （教师板书竖式，边写边讲解）\n   先用12个位上的2去乘145：2×5=10，写0进1；2×4=8加1=9；2×1=2，得290\n   再用12十位上的1去乘145：1×5=5；1×4=4；1×1=1，得145（注意：5要写在十位上）\   最后把两次的积相加：290+1450=1740\n\n5. 验证\n   用计算器验证结果是否正确。',
+        script: '同学们，王叔叔家种了145棵苹果树，平均每棵树收苹果12千克，一共收了多少千克？谁来列算式？\n\n对，145×12。这是一个三位数乘两位数的算式。我们先来估算一下，大约是多少？把145看作150，12看作10，150×10=1500，大约1500千克。\n\n那精确结果是多少呢？我们用竖式来算。\n\n（边板书边讲）先写145，下面写12，画横线。第一步，用12个位上的2去乘145。2×5=10，写0进1；2×4=8，加进位1等于9，写9；2×1=2，写2。所以第一步算出来是290。\n\n第二步，用12十位上的1去乘145。注意！这个1代表的是10，所以1×5=5，这个5要写在十位上。1×4=4，写在百位上。1×1=1，写在千位上。所以第二步算出来是1450。\n\n最后，把290和1450加起来，等于1740。\n\n大家看明白了吗？关键是用十位上的数去乘的时候，积的末位要和十位对齐！',
+        questions: [
+          '为什么用十位上的1乘145，得到的5要写在十位上？',
+          '290和1450分别是怎么得到的？',
+          '如果不用竖式，还有其他方法算出145×12吗？',
+          '谁能用自己的话说一说三位数乘两位数的计算步骤？'
+        ]
+      },
+      {
+        stage: '三、巩固练习（12分钟）',
+        content: '1. 基础练习（课本"试一试"）\n   134×16=    226×34=    178×23=\n\n2. 改错练习（出示错题）\n   ① 234×12=2808（十位乘积末位对错位）\n   ② 156×23=3368（漏加进位）\n   让学生找出错误并改正。\n\n3. 生活应用题\n   ① 李伯伯家的稻田亩产水稻485千克，共有15亩，一共收了多少千克？\n   ② 学校要买125套校服，每套89元，一共需要多少元？\n\n4. 本土化练习\n   张大伯家养了236只鸡，平均每只鸡每月下蛋22个，一个月一共能下多少个蛋？如果每个蛋卖0.5元，一个月能卖多少钱？',
+        script: '现在请大家打开课本，翻到"试一试"，完成这三道竖式计算题。注意书写工整，数位对齐。\n\n（巡视指导）\n\n好，我来看一下大家的作业。大部分同学做得很好，但有几个常见的错误，我们一起来看一看。\n\n（出示错题）这道题错在哪里？对，十位上的1乘234，得数应该从十位开始写，但他从个位开始了，所以结果错了。大家一定要注意！\n\n接下来做这两道应用题，用我们今天学的知识来解决生活中的问题。',
+        questions: [
+          '计算134×16时，用16十位上的1去乘134，得到的134末位的4应该写在哪一位？',
+          '这道改错题错在哪里？你会怎么改正？',
+          '解决应用题时，你是怎么判断用乘法的？',
+          '张大伯家的鸡蛋问题，需要几步计算？'
+        ]
+      },
+      {
+        stage: '四、课堂小结（5分钟）',
+        content: '1. 引导学生总结三位数乘两位数的计算方法\n   ① 先用两位数个位上的数去乘三位数，得数的末位和个位对齐\n   ② 再用两位数十位上的数去乘三位数，得数的末位和十位对齐\n   ③ 最后把两次乘得的积加起来\n\n2. 强调注意事项\n   - 数位对齐是关键\n   - 不要忘记进位\n   - 计算完要验算\n\n3. 鼓励性评价',
+        script: '同学们，今天我们学习了三位数乘两位数，谁能来总结一下计算方法？\n\n对，分三步：先用个位上的数去乘，再用十位上的数去乘，最后把两个积加起来。\n\n最重要的是什么？对，数位对齐！用十位上的数去乘，积的末位一定要和十位对齐。\n\n大家今天学得很认真，老师很高兴。希望同学们回家后多练习，做到又快又准！',
+        questions: [
+          '三位数乘两位数分哪几步计算？',
+          '计算时最容易出错的地方在哪里？',
+          '你有什么好办法可以避免计算错误？'
+        ]
+      },
+      {
+        stage: '五、布置作业（3分钟）',
+        content: '基础作业（必做）：\n1. 课本练习第1-3题\n2. 计算：237×15=  182×24=  315×36=\n\n提升作业（选做）：\n1. 小明家今年收了326袋玉米，每袋重48千克，用一辆载重2吨的卡车来运，需要运几次才能运完？\n2. 思考题：一个三位数乘两位数，积最大是多少？最小是多少？',
+        script: '今天的作业有两个层次。\n\n基础作业是课本上的练习题和三道竖式计算，大家都要完成。\n\n提升作业是给学有余力的同学准备的，第一题是综合应用题，第二题是思考题，有兴趣的同学可以挑战一下。\n\n好，下课！',
+        questions: []
+      }
+    ],
+    boardDesign: '课题：三位数乘两位数\n\n    1 4 5\n  ×  1 2\n  ------\n    2 9 0  ← 用个位上的2乘145\n  1 4 5    ← 用十位上的1乘145（末位对齐十位）\n  ------\n  1 7 4 0\n\n  方法：①个位乘  ②十位乘  ③相加',
+    exercises: [
+      { type: '口算', questions: ['120×30=', '200×40=', '150×20=', '310×30=', '250×40='] },
+      { type: '竖式计算', questions: ['234×16=', '178×23=', '325×24=', '412×35=', '267×18='] },
+      { type: '填空', questions: [
+        '三位数乘两位数，积最少是___位数，最多是___位数。',
+        '245×12=245×___+245×___',
+        '在竖式计算中，用十位上的数去乘另一个因数，积的末位要和___位对齐。'
+      ]},
+      { type: '应用题', questions: [
+        '学校图书馆有125个书架，每个书架放36本书，一共能放多少本书？',
+        '一个果园有184棵梨树，平均每棵树收梨45千克，如果每千克梨卖6元，这个果园一共能收入多少元？'
+      ]}
+    ],
+    localizedTips: [
+      '可以用村里卖粮食的真实数据来出题，比如"张家今年收了236袋小麦，每袋50千克"',
+      '让学生回家调查家长种地、养殖的数据，第二天用真实数据做练习',
+      '用"赶集买菜"的场景来设计应用题，增加亲切感',
+      '对于留守学生，可以设计"给远方父母写信汇报家里收成"的情景'
+    ]
+  },
+
+  '语文_三年级_部编版_荷花': {
+    basicInfo: {
+      subject: '语文', grade: '三年级', textbook: '部编版',
+      chapter: '《荷花》', duration: '40分钟', lessonType: '精读课文',
+      objectives: [
+        '会认"蓬、胀"等生字，会写"瓣、露"等生字，理解"挨挨挤挤、翩翩起舞"等词语',
+        '有感情地朗读课文，背诵第2-4自然段',
+        '理解课文内容，感受荷花的美丽，体会作者对大自然的热爱之情',
+        '学习作者观察事物和展开想象的方法，能仿写一段话'
+      ],
+      keyPoints: '感受荷花美丽的姿态，体会作者丰富的想象，理解"把眼前的一池荷花看作一大幅活的画"的含义。',
+      difficulties: '理解"我"为什么会忘记自己是在看荷花，体会作者与荷花融为一体的境界。',
+      commonErrors: [
+        '"瓣"和"辨"容易混淆',
+        '"挨挨挤挤"的"挨"读一声（āi），不读二声',
+        '学生难以理解"化身荷花"的想象写法',
+        '仿写时容易空洞，缺少具体细节描写'
+      ]
+    },
+    preparation: {
+      teacher: '荷花图片或视频（可用手机投屏）、生字卡片、朗读配乐',
+      student: '预习课文、圈画生字词',
+      localMaterials: '如果学校附近有池塘或荷花，可提前带学生观察；也可让学生带家里有的花的图片'
+    },
+    process: [
+      {
+        stage: '一、情境导入（5分钟）',
+        content: '1. 出示荷花图片（或视频）\n   教师：同学们，你们见过荷花吗？在哪里见过的？\n\n2. 学生自由发言，说说对荷花的印象\n\n3. 揭示课题\n   教师：今天我们要学习著名作家叶圣陶爷爷写的一篇关于荷花的文章。让我们一起走进那片美丽的荷花池吧！\n\n4. 板书课题，齐读课题',
+        script: '同学们，请看大屏幕。（出示荷花图片）\n\n哇，好多同学都发出了惊叹声！你们见过荷花吗？在哪里见过的？\n\n（学生回答）\n\n有同学说在村口的池塘里见过，有同学说在电视上见过。荷花确实很美，古人说"出淤泥而不染"，就是赞美荷花的。\n\n今天，著名作家叶圣陶爷爷要带我们去欣赏一池美丽的荷花。请打开课本，我们一起学习《荷花》。',
+        questions: [
+          '你见过的荷花是什么样子的？',
+          '看到这些荷花图片，你有什么感受？',
+          '你知道荷花在什么季节开放吗？'
+        ]
+      },
+      {
+        stage: '二、初读课文，学习生字（8分钟）',
+        content: '1. 教师范读课文（配乐朗读），学生边听边标出自然段\n\n2. 学生自由朗读课文，要求：\n   - 读准字音，读通句子\n   - 圈出不认识的字，借助拼音多读几遍\n\n3. 学习生字词\n   - 认读：花瓣儿、莲蓬、饱胀、破裂、姿势、挨挨挤挤、翩翩起舞\n   - 重点指导："挨挨挤挤"的"挨"读āi；"莲蓬"的"蓬"读轻声\n   - 书写指导："瓣"中间是"瓜"，不要写成"爪"\n\n4. 指名分段朗读，正音',
+        script: '现在老师来朗读课文，请大家认真听，注意听准字音，同时标出课文一共有几个自然段。\n\n（配乐朗读）\n\n好，课文一共有5个自然段。现在请同学们自己大声朗读课文，遇到不认识的字看拼音，多读几遍。\n\n（学生自由读）\n\n好，我们来看这些生字词。谁来读一读？（出示生字卡片）\n\n注意，"挨挨挤挤"的"挨"读一声āi，不读二声。"莲蓬"的"蓬"读轻声péng。\n\n"瓣"这个字怎么写？看老师板书。左边是"辛"，中间是"瓜"，右边是"辛"。注意中间是"瓜"不是"爪"，不要写错了。',
+        questions: [
+          '课文一共有几个自然段？',
+          '"挨挨挤挤"是什么意思？你能用动作表示一下吗？',
+          '"翩翩起舞"形容的是什么？'
+        ]
+      },
+      {
+        stage: '三、精读品味（15分钟）',
+        content: '1. 学习第2自然段（荷花的不同姿态）\n   - 默读思考：课文写了荷花的哪三种姿态？\n   - 画出相关句子\n   - 交流：有的才展开两三片花瓣儿；有的花瓣儿全展开了；有的还是花骨朵儿\n   - 品读"挨挨挤挤"：体会荷叶多而密\n   - 比喻句："碧绿的大圆盘"把荷叶比作什么？\n\n2. 学习第3自然段（作者的想象）\n   - 齐读第3自然段\n   - 讨论："如果把眼前的一池荷花看作一大幅活的画，那画家的本领可真了不起"——画家是谁？\n   - 理解：大自然是画家，大自然创造了这美丽的景色\n\n3. 学习第4自然段（化身荷花）\n   - 教师范读\n   - 讨论："我"变成了荷花，在做什么？\n   - "我"穿着雪白的衣裳，站在阳光里——想象自己就是一朵荷花\n   - 风来时翩翩起舞，风停时静静站立\n   - 蜻蜓飞过来、小鱼游过来——动物们和荷花做朋友\n\n4. 有感情朗读第2-4自然段，尝试背诵',
+        script: '现在我们仔细品读课文。请默读第2自然段，思考：课文写了荷花的哪几种不同的样子？用笔画出来。\n\n（学生默读）\n\n谁来回答？对，课文写了三种：有的是才展开两三片花瓣儿的，有的是花瓣儿全展开了露出嫩黄色的小莲蓬的，还有的是花骨朵儿看起来饱胀得马上要破裂似的。\n\n大家看这个"挨挨挤挤"是什么意思？荷叶一片挨着一片，挤在一起。说明荷叶很多很密。就像我们课间操排队一样，一个挨着一个。\n\n再看第3自然段，"如果把眼前的一池荷花看作一大幅活的画，那画家的本领可真了不起。"这位了不起的画家是谁呀？\n\n对，是大自然！是大自然这位神奇的画家画出了这么美的荷花。\n\n现在请同学们闭上眼睛，听老师读第4自然段。想象自己也变成了一朵荷花……\n\n（朗读第4段）\n\n好，睁开眼睛。如果你就是一朵荷花，你是什么样子的？你在做什么？谁来用自己的话说一说？',
+        questions: [
+          '课文写了荷花的哪三种姿态？你最喜欢哪一种？',
+          '"挨挨挤挤"说明了什么？',
+          '第3自然段说的"画家"是谁？为什么说这位画家的本领了不起？',
+          '"我"变成了荷花之后，做了哪些事情？',
+          '如果你也是一朵荷花，你还会看到什么、听到什么？'
+        ]
+      },
+      {
+        stage: '四、拓展练习（8分钟）',
+        content: '1. 仿写练习\n   仿照第2自然段的写法，用"有的……有的……有的……"写一段话\n   可以写：学校里的花、田野里的庄稼、天上的云\n\n2. 本土化拓展\n   - 说说我们家乡还有哪些美丽的植物\n   - 你觉得我们村最美的风景是什么？试着用几句话描述\n\n3. 朗读展示\n   分组朗读第2-4自然段，比一比哪组读得最有感情',
+        script: '同学们，课文第2自然段用了"有的……有的……有的……"来写荷花的不同样子，这个写法真好。现在请大家用这个句式，也来写一段话。\n\n你可以写我们学校花坛里的花，可以写田野里的庄稼，也可以写天上的云。\n\n给大家3分钟时间，写一写。\n\n（学生写作）\n\n好，谁愿意来读一读自己写的？（指名读并评价）\n\n写得真好！你观察得很仔细，用词也很生动。\n\n接下来，我们分组来朗读第2到第4自然段，看看哪组读得最有感情。',
+        questions: [
+          '你准备写什么？打算怎么用"有的……有的……有的……"？',
+          '我们家乡还有哪些美丽的景色？',
+          '你觉得怎样才能读出对荷花的喜爱之情？'
+        ]
+      },
+      {
+        stage: '五、总结与作业（4分钟）',
+        content: '1. 总结\n   - 课文按"闻到清香→看到姿态→展开想象"的顺序写荷花\n   - 作者用了丰富的想象，把自己想象成一朵荷花\n   - 我们要学会观察身边的美，用优美的语言来描述\n\n2. 布置作业\n   基础作业（必做）：\n   - 抄写生字词两遍\n   - 有感情朗读课文3遍，尝试背诵第2-3自然段\n   \n   提升作业（选做）：\n   - 用"有的……有的……有的……"写一段话（不少于50字）\n   - 观察身边的一种植物，写一段话描述它的样子',
+        script: '同学们，今天我们学习了叶圣陶爷爷的《荷花》。课文先写了闻到荷花的清香，然后看到了荷花美丽的姿态，最后展开了丰富的想象，把自己想象成了一朵荷花。\n\n希望同学们也能像叶圣陶爷爷一样，善于观察身边的美，用优美的语言把它写下来。\n\n今天的作业：抄写生字词两遍，朗读课文3遍，争取背下第2和第3自然段。想挑战的同学可以用"有的……有的……有的……"写一段话。\n\n下课！',
+        questions: []
+      }
+    ],
+    boardDesign: '课题：荷花（叶圣陶）\n\n  闻到：清香\n  ↓\n  看到：荷叶——挨挨挤挤、大圆盘\n        荷花——有的才展开、有的全展开、有的花骨朵\n  ↓\n  想象：变成荷花——翩翩起舞\n\n  写法：有的……有的……有的……',
+    exercises: [
+      { type: '看拼音写词语', questions: ['bàn(瓣)儿、lián peng(蓬)、bǎo zhàng(胀)', 'zī shì(姿势)、pian pian(翩翩)起舞'] },
+      { type: '按要求写词语', questions: [
+        '写三个描写颜色的词语：____、____、____',
+        '写三个AABB式的词语：挨挨挤挤、____、____',
+        '写三个像"翩翩起舞"这样的词语：____、____、____'
+      ]},
+      { type: '按课文内容填空', questions: [
+        '荷叶____的，像一个个____的大圆盘。',
+        '有的才展开____花瓣儿。有的花瓣儿____，露出嫩黄色的____。有的还是____，看起来饱胀得马上要____。',
+        '我忽然觉得自己仿佛就是一朵____。'
+      ]},
+      { type: '仿写', questions: [
+        '用"有的……有的……有的……"描写天上的白云。',
+        '仿照课文写一段话，描写你最喜欢的一种花。'
+      ]}
+    ],
+    localizedTips: [
+      '如果学校附近有池塘，可以带学生实地观察荷花或荷叶',
+      '可以用田野里的油菜花、向日葵等本地植物来类比讲解',
+      '让学生说说自己家院子里种的花，用课文中的方法描述',
+      '对于留守学生，可以引导他们想象"如果我是荷花，我想告诉远方的爸爸妈妈什么"'
+    ]
+  },
+
+  '英语_五年级_人教版_Unit3 What would you like?': {
+    basicInfo: {
+      subject: '英语', grade: '五年级', textbook: '人教版',
+      chapter: 'Unit3 What would you like?', duration: '40分钟', lessonType: '对话课',
+      objectives: [
+        '能够听、说、读、写食物类单词：sandwich, salad, hamburger, ice cream, tea, fresh, healthy, delicious',
+        '能够运用句型"What would you like to eat/drink? I\'d like..."进行点餐交流',
+        '能够在情境中运用"What\'s your favourite food? It\'s..."表达对食物的喜好',
+        '了解中西方饮食文化差异，培养健康饮食习惯'
+      ],
+      keyPoints: '掌握食物类词汇和点餐句型"What would you like to eat/drink? I\'d like..."的运用。',
+      difficulties: '能够在真实情境中灵活运用所学句型进行点餐对话；healthy, delicious等形容词的发音和用法。',
+      commonErrors: [
+        '"I\'d like"容易说成"I like"，漏掉\'d',
+        '不可数名词的用法：不能说"a tea"，应该说"a cup of tea"',
+        'healthy的th发音不标准',
+        'What would you like 和 What do you like 混淆'
+      ]
+    },
+    preparation: {
+      teacher: '食物图片卡片（或手绘）、菜单卡片、点餐情景道具、录音/视频',
+      student: '英语课本、练习本',
+      localMaterials: '用本地常见食物的图片辅助教学（如面条noodles、饺子dumplings、米饭rice等）'
+    },
+    process: [
+      {
+        stage: '一、热身导入（5分钟）',
+        content: '1. Greeting & Sing a song\n   播放 "Let\'s sing" — "What would you like?"\n\n2. Free talk\n   T: I\'m hungry. Are you hungry? What\'s your favourite food?\n   引导学生用已学食物词汇回答\n\n3. Lead-in\n   出示一张餐厅图片\n   T: Look! This is a restaurant. If you are in a restaurant, what would you like to eat?\n   引出本课主题',
+        script: 'Good morning, boys and girls! How are you today?\n\n（学生回答）\n\nI\'m fine, thank you. But I\'m a little hungry now. Are you hungry? Yes? Me too!\n\nWhat\'s your favourite food? （指着学生）What about you?\n\n（学生回答）\n\nMmm, I like noodles too. Now look at this picture. What\'s this? Yes, it\'s a restaurant. If you are in a restaurant, what would you like to eat? Today let\'s learn how to order food in English!',
+        questions: [
+          'What\'s your favourite food?',
+          'Do you like Chinese food or Western food?',
+          'When you go to a restaurant, what do you usually order?'
+        ]
+      },
+      {
+        stage: '二、新词学习（10分钟）',
+        content: '1. 学习食物单词\n   出示图片，逐个学习：\n   - sandwich (三明治) — 注意发音 /ˈsænwɪtʃ/ 或 /ˈsænwɪdʒ/\n   - salad (沙拉) — 强调 /æ/ 的发音\n   - hamburger (汉堡包) — 分音节拼读 ham-bur-ger\n   - ice cream (冰淇淋) — 连读练习\n   - tea (茶) — 简单词，快速带过\n\n2. 学习形容词\n   - fresh (新鲜的) — 举例：fresh fruit, fresh vegetables\n   - healthy (健康的) — 注意th发音 /θ/\n   - delicious (美味的) — 分音节 de-li-cious\n\n3. 游戏：What\'s missing?\n   出示5-6张食物图片，然后拿掉一张，学生猜哪张不见了\n\n4. 本地化拓展\n   补充本地常见食物：noodles(面条), dumplings(饺子), rice(米饭), tofu(豆腐)',
+        script: 'Now let\'s learn some new words about food.\n\n（出示三明治图片）What\'s this? It\'s a sandwich. Read after me: sandwich. Again. Good!\n\n（出示沙拉图片）This is salad. Pay attention to the sound /æ/. Sa-la-d. Not "se-lid". Salad.\n\n（出示汉堡图片）Hamburger. Let\'s read it part by part: ham - bur - ger. Hamburger.\n\n（出示冰淇淋图片）Ice cream. Everyone likes ice cream, right? Ice cream.\n\n（出示茶图片）Tea. Very easy! Tea.\n\nNow some describing words. Fresh. Fresh fruit, fresh vegetables. The apples from our village are very fresh!\n\nHealthy. 注意这个th的发音，舌尖放在上下齿之间。Healthy. Healthy food.\n\nDelicious. De-li-cious. The food in our canteen is delicious!\n\nLet\'s play a game — "What\'s missing?" Look at these pictures carefully...',
+        questions: [
+          'Can you read these words? Sandwich, salad, hamburger...',
+          'What\'s your favourite food from these?',
+          'What food is healthy? What food is not so healthy?',
+          'Can you name some food from our village?'
+        ]
+      },
+      {
+        stage: '三、句型学习与操练（12分钟）',
+        content: '1. 学习核心句型\n   - What would you like to eat? I\'d like a hamburger, please.\n   - What would you like to drink? I\'d like some tea, please.\n   - What\'s your favourite food? I like noodles. They\'re delicious.\n\n   强调：I\'d like = I would like（比I like更礼貌）\n\n2. 对话示范\n   T: What would you like to eat?\n   S: I\'d like a sandwich, please.\n   T: What would you like to drink?\n   S: I\'d like some milk, please.\n\n3. Pair work（同桌练习）\n   两人一组，用菜单卡片进行点餐对话\n   A: Welcome! What would you like to eat?\n   B: I\'d like..., please.\n   A: What would you like to drink?\n   B: I\'d like..., please.\n   A: OK. Here you are.\n   B: Thank you!\n\n4. 角色扮演\n   请几组同学到前面表演点餐场景',
+        script: 'Now let\'s learn how to order food.\n\nListen carefully. When you want to order food, you can say: "I\'d like a hamburger, please." I\'d like means "我想要". It\'s more polite than "I want".\n\nSo the question is: "What would you like to eat?" What. Would. You. Like. To. Eat?\n\nLet me ask you. （走到学生面前）What would you like to eat?\n\n（引导学生回答）I\'d like a..., please. Very good!\n\nNow practice with your partner. One is the waiter or waitress, the other is the customer. Use these sentence patterns. You have 3 minutes.\n\n（学生练习，教师巡视指导）\n\nOK, who wants to come to the front and show us? You two, please!\n\n（学生表演）\n\nExcellent! You did a great job!',
+        questions: [
+          'What would you like to eat?（向学生提问）',
+          'What\'s the difference between "I like" and "I\'d like"?',
+          'Can you make a dialogue with your partner?',
+          'If you are a waiter/waitress, how do you ask the customer?'
+        ]
+      },
+      {
+        stage: '四、巩固拓展（8分钟）',
+        content: '1. 制作班级菜单\n   每组设计一份英文菜单，包含食物名称和价格\n   使用本课词汇和本地食物\n\n2. 菜单展示\n   各组展示菜单，用英语介绍\n   "Our restaurant has... It\'s fresh/healthy/delicious."\n\n3. 大型点餐活动\n   学生拿着自己组的菜单，到其他组"点餐"\n   用所学句型完成至少3次对话\n\n4. 健康饮食讨论\n   T: What food is healthy? What food should we eat less?\n   引导学生树立健康饮食观念',
+        script: 'Now let\'s do something fun! Each group will make an English menu for your own restaurant.\n\nYou can use the words we learned today, and you can also add local food like noodles, dumplings, rice...\n\nWrite the food names and prices on your menu. You have 5 minutes.\n\n（学生制作菜单）\n\nGreat! Now let\'s have a big restaurant activity. You can go to other groups and order food from their menus. You need to use English! Try to order at least 3 times.\n\n（学生活动）\n\nTime\'s up! Let\'s talk about healthy eating. What food is good for our health? Vegetables, fruits... What food should we eat less? Fried food, too much ice cream...\n\nRemember, eat healthy food and stay strong!',
+        questions: [
+          'What\'s on your menu?',
+          'Can you introduce your restaurant in English?',
+          'What healthy food do you know?',
+          'What\'s your favourite healthy food?'
+        ]
+      },
+      {
+        stage: '五、总结与作业（5分钟）',
+        content: '1. 总结\n   - 复习本课单词：sandwich, salad, hamburger, ice cream, tea, fresh, healthy, delicious\n   - 复习核心句型：What would you like to eat/drink? I\'d like...\n   - 强调I\'d like的礼貌用法\n\n2. 布置作业\n   基础作业（必做）：\n   - 抄写本课单词每个4遍\n   - 听录音跟读课文3遍\n   \n   提升作业（选做）：\n   - 用英语写出你一家人喜欢的食物\n   - 和家人用英语进行一次点餐对话（可以录视频）',
+        script: 'Let\'s review what we learned today.\n\nRead the words together: sandwich, salad, hamburger, ice cream, tea, fresh, healthy, delicious.\n\nAnd the sentences: What would you like to eat? I\'d like... What would you like to drink? I\'d like...\n\nRemember, "I\'d like" is more polite than "I want". Use it when you order food!\n\nHomework: Copy the new words 4 times each. Listen to the tape and read the text 3 times.\n\nOptional: Write about your family\'s favourite food in English. Or make a video of ordering food in English with your family.\n\nClass is over. Goodbye, everyone!',
+        questions: []
+      }
+    ],
+    boardDesign: 'Unit 3 What would you like?\n\n  Words:\n  sandwich  salad  hamburger\n  ice cream  tea\n  fresh  healthy  delicious\n\n  Sentences:\n  — What would you like to eat?\n  — I\'d like a _____, please.\n\n  — What would you like to drink?\n  — I\'d like some _____, please.\n\n  I\'d like = I would like (更礼貌)',
+    exercises: [
+      { type: '单词连线', questions: [
+        'sandwich — 三明治',
+        'salad — 沙拉',
+        'hamburger — 汉堡包',
+        'healthy — 健康的',
+        'delicious — 美味的'
+      ]},
+      { type: '选择填空', questions: [
+        '— What would you like to eat? — I\'d like ___. (A. a hamburger  B. hamburger)',
+        '— What would you like to drink? — I\'d like some ___. (A. tea  B. a tea)',
+        'The vegetables are very ___. (A. health  B. healthy)',
+        'I\'d like = I ___ like. (A. would  B. should)'
+      ]},
+      { type: '连词成句', questions: [
+        'would / what / you / like / to / eat / ?',
+        'I\'d / a / please / sandwich / like / .',
+        'is / the / food / delicious / very / .'
+      ]},
+      { type: '情景对话', questions: [
+        '你和同学在食堂，请用英语完成一次点餐对话（至少4个回合）。',
+        '向你的朋友介绍你最喜欢的食物，并说明原因。'
+      ]}
+    ],
+    localizedTips: [
+      '补充本地食物词汇：noodles(面条), dumplings(饺子), rice(米饭), tofu(豆腐), mantou(馒头)',
+      '用"学校食堂"或"村口小吃店"代替西餐厅作为情景，更贴近学生生活',
+      '可以让学生画一画自己家最常吃的饭菜，用英语标注',
+      '对于英语基础薄弱的学生，可以先从"I like..."开始，再过渡到"I\'d like..."',
+      '设计"赶集买菜"的英语情景，用本地化场景练习对话'
+    ]
+  }
+};
+
+// ========== 通用教案生成（非预设数据时） ==========
+function generateGenericLesson(subject, grade, textbook, chapter, duration, level, style) {
+  const levelNote = level === '薄弱' ? '（针对基础薄弱的学生，讲解更加细致，多举例，多练习）' :
+                    level === '较好' ? '（学生基础较好，可适当增加拓展内容，提高思维深度）' : '';
+  const styleNote = style === '公开课' ? '\n【公开课特别提示】\n- 设计精彩导入，激发学生兴趣\n- 准备丰富的教学资源和教具\n- 注意师生互动，关注每一位学生\n- 板书设计要美观大方\n- 课堂小结要升华主题' : '';
+  const localNote = style === '本地化' ? '\n【本地化建议】\n- 尽量使用学生熟悉的生活场景举例\n- 结合本地的农业生产、风俗习惯设计教学情境\n- 设计低成本或零成本的课堂活动\n- 关注留守学生的情感需求，营造温暖的课堂氛围' : '';
+
+  return {
+    basicInfo: {
+      subject, grade, textbook, chapter, duration,
+      lessonType: '新授课',
+      objectives: [
+        `掌握${chapter}的基本知识和核心概念`,
+        `能够运用所学知识解决实际问题`,
+        `培养${subject}思维能力和学习兴趣`
+      ],
+      keyPoints: `理解${chapter}的核心知识点，掌握基本方法和技能。`,
+      difficulties: `灵活运用${chapter}的知识解决实际问题。`,
+      commonErrors: [
+        '对基本概念理解不够准确',
+        '解题时容易忽略关键条件',
+        '知识迁移能力有待提高'
+      ]
+    },
+    preparation: {
+      teacher: '多媒体课件、教材、教具',
+      student: '课本、练习本、文具',
+      localMaterials: '可根据本地实际情况准备辅助教学材料'
+    },
+    process: [
+      {
+        stage: '一、复习导入（5分钟）',
+        content: `1. 复习上节课相关知识\n2. 通过提问或情境导入新课\n3. 引出课题：${chapter}${levelNote}`,
+        script: `同学们，今天我们要学习新的内容——${chapter}。\n\n在开始之前，我们先来回顾一下上节课学过的知识。\n\n（根据学生回答情况引入新课）\n\n好，今天我们就一起来探索${chapter}的奥秘！`,
+        questions: ['上节课我们学到了什么？', '关于今天的内容，你已经知道了什么？', '你想通过今天的学习了解什么？']
+      },
+      {
+        stage: '二、探究新知（15分钟）',
+        content: `1. 创设情境，提出问题\n2. 引导学生自主探究\n3. 小组合作讨论\n4. 教师讲解核心知识点\n5. 归纳总结方法${levelNote}${localNote}`,
+        script: `现在请大家看黑板/大屏幕，这里有一个问题需要我们解决。\n\n（呈现问题）\n\n请大家先自己想一想，然后和同桌讨论一下。\n\n（学生讨论后）\n\n好，谁来说说你的想法？\n\n（根据学生回答进行引导和讲解）\n\n大家说得很好。现在老师来总结一下...`,
+        questions: ['你从这个问题中发现了什么？', '你是怎么想的？', '还有没有不同的方法？', '谁能总结一下我们刚才学的方法？']
+      },
+      {
+        stage: '三、巩固练习（12分钟）',
+        content: `1. 基础练习：巩固本课核心知识\n2. 提高练习：灵活运用所学知识\n3. 应用练习：解决实际问题${levelNote}`,
+        script: `现在请大家完成以下练习。\n\n（出示练习题）\n\n先独立完成，遇到困难可以举手问老师。\n\n（巡视指导）\n\n好，我们一起来核对答案。`,
+        questions: ['这道题你是怎么做的？', '为什么要用这个方法？', '谁有不同的解法？', '这道题容易在哪里出错？']
+      },
+      {
+        stage: '四、课堂小结（5分钟）',
+        content: `1. 引导学生回顾本课所学\n2. 强调重点和注意事项\n3. 鼓励性评价${styleNote}`,
+        script: `同学们，今天我们学习了${chapter}，谁来总结一下今天学到了什么？\n\n（学生总结）\n\n很好！大家今天学得很认真。希望同学们回去后好好复习，多做练习。`,
+        questions: ['今天我们学到了什么？', '你觉得最重要的是什么？', '还有什么不明白的地方吗？']
+      },
+      {
+        stage: '五、布置作业（3分钟）',
+        content: `基础作业（必做）：\n1. 完成课本练习题\n2. 复习本课内容\n\n提升作业（选做）：\n1. 拓展练习题\n2. 预习下一课内容`,
+        script: `今天的作业：基础作业是完成课本上的练习题并复习今天的内容。提升作业是拓展练习和预习。\n\n好，下课！`,
+        questions: []
+      }
+    ],
+    boardDesign: `课题：${chapter}\n\n  一、核心知识点\n  （根据具体内容板书）\n\n  二、重要方法\n  （根据具体内容板书）\n\n  三、注意事项\n  （根据具体内容板书）`,
+    exercises: [
+      { type: '基础练习', questions: [`完成课本P___练习1-3`, `根据本课内容填空/选择/判断`] },
+      { type: '提高练习', questions: [`运用本课知识解决稍复杂的问题`, `综合运用题`] },
+      { type: '应用练习', questions: [`用所学知识解决生活中的实际问题`] }
+    ],
+    localizedTips: [
+      '结合本地实际情况设计教学情境',
+      '使用学生熟悉的生活场景举例',
+      '关注留守学生的学习状态，给予更多鼓励'
+    ]
+  };
+}
+
+// ========== 生成教案 ==========
+function generateLesson() {
+  const subject = document.getElementById('subject').value;
+  const grade = document.getElementById('grade').value;
+  const textbook = document.getElementById('textbook').value;
+  const chapter = document.getElementById('chapter').value.trim();
+  const duration = getOption('duration');
+  const level = getOption('level');
+  const style = getOption('style');
+
+  if (!subject || !grade || !textbook || !chapter) {
+    showToast('请填写完整的课程信息');
+    return;
+  }
+
+  // 显示加载动画
+  const overlay = document.getElementById('loadingOverlay');
+  const tips = [
+    'AI正在分析教材内容，为您量身定制教案',
+    '正在设计教学环节和课堂活动...',
+    '正在生成课堂提问和练习题...',
+    '正在优化教案结构，请稍候...',
+    '即将完成，最后调整中...'
+  ];
+  let tipIdx = 0;
+  overlay.classList.add('show');
+  const tipTimer = setInterval(() => {
+    tipIdx = (tipIdx + 1) % tips.length;
+    document.getElementById('loadingTip').textContent = tips[tipIdx];
+  }, 800);
+
+  // 模拟加载延迟
+  setTimeout(() => {
+    clearInterval(tipTimer);
+    overlay.classList.remove('show');
+
+    // 查找匹配的模拟教案
+    const key = `${subject}_${grade}_${textbook}_${chapter}`;
+    let lesson = mockLessons[key];
+
+    if (!lesson) {
+      // 尝试模糊匹配
+      for (const mk in mockLessons) {
+        const parts = mk.split('_');
+        if (parts[0] === subject && parts[1] === grade && chapter.includes(parts[3])) {
+          lesson = mockLessons[mk];
+          break;
+        }
+      }
+    }
+
+    if (!lesson) {
+      // 生成通用教案
+      lesson = generateGenericLesson(subject, grade, textbook, chapter, duration, level, style);
+    }
+
+    // 根据选项调整
+    if (duration) lesson.basicInfo.duration = duration;
+    if (level) lesson.basicInfo.level = level;
+    if (style) lesson.basicInfo.style = style;
+
+    // 渲染教案
+    renderLesson(lesson);
+    showPage('result');
+  }, 2500);
+}
+
+// ========== 渲染教案 ==========
+function renderLesson(lesson) {
+  const info = lesson.basicInfo;
+  let html = '';
+
+  // 基本信息
+  html += '<h2>教案基本信息</h2>';
+  html += '<div class="info-grid">';
+  html += `<div class="info-item"><strong>学科：</strong>${info.subject}</div>`;
+  html += `<div class="info-item"><strong>年级：</strong>${info.grade}</div>`;
+  html += `<div class="info-item"><strong>教材版本：</strong>${info.textbook}</div>`;
+  html += `<div class="info-item"><strong>课题：</strong>${info.chapter}</div>`;
+  html += `<div class="info-item"><strong>课时：</strong>${info.duration}</div>`;
+  html += `<div class="info-item"><strong>课型：</strong>${info.lessonType}</div>`;
+  if (info.level) html += `<div class="info-item"><strong>学生基础：</strong>${info.level}</div>`;
+  if (info.style) html += `<div class="info-item"><strong>教案风格：</strong>${info.style}版</div>`;
+  html += '</div>';
+
+  // 教学目标
+  html += '<h2>教学目标</h2>';
+  html += '<ol>';
+  info.objectives.forEach(obj => { html += `<li>${obj}</li>`; });
+  html += '</ol>';
+
+  // 重点难点
+  html += '<h2>重点与难点</h2>';
+  html += `<div class="highlight-box success"><strong>教学重点：</strong>${info.keyPoints}</div>`;
+  html += `<div class="highlight-box danger"><strong>教学难点：</strong>${info.difficulties}</div>`;
+
+  // 易错点
+  if (info.commonErrors && info.commonErrors.length > 0) {
+    html += '<h2>易错点提醒</h2>';
+    html += '<div class="highlight-box info">';
+    info.commonErrors.forEach(err => { html += `<p>&#x26A0; ${err}</p>`; });
+    html += '</div>';
+  }
+
+  // 教学准备
+  html += '<h2>教学准备</h2>';
+  html += `<p><strong>教师准备：</strong>${lesson.preparation.teacher}</p>`;
+  html += `<p><strong>学生准备：</strong>${lesson.preparation.student}</p>`;
+  if (lesson.preparation.localMaterials) {
+    html += `<div class="highlight-box"><strong>本地化材料：</strong>${lesson.preparation.localMaterials}</div>`;
+  }
+
+  // 教学过程
+  html += '<h2>教学过程</h2>';
+  lesson.process.forEach(step => {
+    html += `<h3>${step.stage}</h3>`;
+    html += `<p>${step.content.replace(/\n/g, '<br>')}</p>`;
+
+    // 讲解脚本（详细版或公开课版才显示）
+    if (info.style === '详细' || info.style === '公开课' || !info.style || info.style === '标准') {
+      if (step.script) {
+        html += '<div class="script-box"><strong>【教师讲解脚本】</strong><br>' + step.script.replace(/\n/g, '<br>') + '</div>';
+      }
+    }
+
+    // 课堂提问
+    if (step.questions && step.questions.length > 0) {
+      html += '<h4>课堂提问清单</h4>';
+      html += '<ol>';
+      step.questions.forEach(q => { html += `<li>${q}</li>`; });
+      html += '</ol>';
+    }
+  });
+
+  // 板书设计
+  html += '<h2>板书设计</h2>';
+  html += `<div class="board-design"><div class="board-title">${info.chapter}</div>${lesson.boardDesign.replace(/\n/g, '<br>')}</div>`;
+
+  // 随堂练习
+  html += '<h2>随堂练习题</h2>';
+  lesson.exercises.forEach(ex => {
+    html += `<h3>${ex.type}</h3>`;
+    html += '<ol>';
+    ex.questions.forEach(q => { html += `<li>${q}</li>`; });
+    html += '</ol>';
+  });
+
+  // 本地化建议
+  if (lesson.localizedTips && lesson.localizedTips.length > 0) {
+    html += '<h2>乡村教学建议</h2>';
+    html += '<div class="highlight-box success">';
+    lesson.localizedTips.forEach(tip => { html += `<p>&#x1F333; ${tip}</p>`; });
+    html += '</div>';
+  }
+
+  document.getElementById('lessonOutput').innerHTML = html;
+}
+
+// ========== 获取教案纯文本 ==========
+function getLessonText() {
+  const output = document.getElementById('lessonOutput');
+  // 获取纯文本并清理
+  let text = output.innerText || output.textContent;
+  return text;
+}
+
+// ========== 复制教案 ==========
+function copyLesson() {
+  const text = getLessonText();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('教案已复制到剪贴板');
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('教案已复制到剪贴板');
+  } catch (e) {
+    showToast('复制失败，请手动复制');
+  }
+  document.body.removeChild(ta);
+}
+
+// ========== 导出TXT ==========
+function exportTxt() {
+  const text = getLessonText();
+  const info = currentLessonInfo || {};
+  const filename = `${info.subject || '教案'}_${info.grade || ''}_${info.chapter || '未命名'}.txt`;
+
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('教案已导出为TXT文件');
+}
+
+// 保存当前教案信息用于导出
+let currentLessonInfo = {};
+
+// ========== 收藏到教案库 ==========
+function saveToLibrary() {
+  const text = getLessonText();
+  const subject = document.getElementById('subject').value;
+  const grade = document.getElementById('grade').value;
+  const textbook = document.getElementById('textbook').value;
+  const chapter = document.getElementById('chapter').value.trim();
+  const duration = getOption('duration');
+  const style = getOption('style');
+
+  currentLessonInfo = { subject, grade, textbook, chapter };
+
+  const lessonData = {
+    id: Date.now(),
+    subject,
+    grade,
+    textbook,
+    chapter,
+    duration,
+    style,
+    content: text,
+    createdAt: new Date().toLocaleString('zh-CN')
+  };
+
+  let library = JSON.parse(localStorage.getItem('lessonLibrary') || '[]');
+  library.unshift(lessonData);
+  localStorage.setItem('lessonLibrary', JSON.stringify(library));
+  showToast('教案已收藏到教案库');
+}
+
+// ========== 渲染教案库 ==========
+function renderLibrary(filter) {
+  const library = JSON.parse(localStorage.getItem('lessonLibrary') || '[]');
+  const container = document.getElementById('libraryList');
+
+  if (library.length === 0) {
+    container.innerHTML = `
+      <div class="library-empty">
+        <div class="icon">&#x1F4DA;</div>
+        <p>教案库还是空的</p>
+        <p>生成教案后点击"收藏教案"即可保存</p>
+      </div>`;
+    return;
+  }
+
+  const filtered = filter && filter !== 'all'
+    ? library.filter(item => item.subject === filter)
+    : library;
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="library-empty"><p>该学科暂无收藏的教案</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => `
+    <div class="library-item" onclick="viewLibraryItem(${item.id})">
+      <h3>${item.chapter}</h3>
+      <div class="meta">${item.subject} | ${item.grade} | ${item.textbook} | ${item.duration || '40分钟'} | ${item.createdAt}</div>
+      <div class="actions" onclick="event.stopPropagation()">
+        <button onclick="viewLibraryItem(${item.id})">查看</button>
+        <button onclick="exportLibraryItem(${item.id})">导出</button>
+        <button class="delete" onclick="deleteLibraryItem(${item.id})">删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== 筛选教案库 ==========
+function filterLibrary(filter, btn) {
+  document.querySelectorAll('.library-filter button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLibrary(filter);
+}
+
+// ========== 查看教案库项目 ==========
+function viewLibraryItem(id) {
+  const library = JSON.parse(localStorage.getItem('lessonLibrary') || '[]');
+  const item = library.find(l => l.id === id);
+  if (!item) return;
+
+  currentLessonInfo = { subject: item.subject, grade: item.grade, chapter: item.chapter };
+
+  const output = document.getElementById('lessonOutput');
+  // 将纯文本转为HTML段落
+  output.innerHTML = item.content.split('\n').map(line =>
+    line.trim() ? `<p>${line}</p>` : '<br>'
+  ).join('');
+
+  showPage('result');
+}
+
+// ========== 导出教案库项目 ==========
+function exportLibraryItem(id) {
+  const library = JSON.parse(localStorage.getItem('lessonLibrary') || '[]');
+  const item = library.find(l => l.id === id);
+  if (!item) return;
+
+  const filename = `${item.subject}_${item.grade}_${item.chapter}.txt`;
+  const blob = new Blob([item.content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('教案已导出');
+}
+
+// ========== 删除教案库项目 ==========
+function deleteLibraryItem(id) {
+  if (!confirm('确定要删除这份教案吗？')) return;
+  let library = JSON.parse(localStorage.getItem('lessonLibrary') || '[]');
+  library = library.filter(l => l.id !== id);
+  localStorage.setItem('lessonLibrary', JSON.stringify(library));
+  renderLibrary();
+  showToast('教案已删除');
+}
+
+// ========== 二次生成 ==========
+function regenerateLesson(newStyle) {
+  // 更新风格选项
+  const styleGroup = document.querySelector('.option-tags[data-name="style"]');
+  if (styleGroup) {
+    styleGroup.querySelectorAll('.option-tag').forEach(t => {
+      t.classList.remove('selected');
+      if (t.dataset.value === newStyle) t.classList.add('selected');
+    });
+  }
+  generateLesson();
+}
+
+// ========== 页面初始化 ==========
+document.addEventListener('DOMContentLoaded', () => {
+  // 预填示例数据方便测试
+  // 可取消注释以下代码来快速测试
+  /*
+  document.getElementById('subject').value = '数学';
+  document.getElementById('grade').value = '四年级';
+  document.getElementById('textbook').value = '北师大版';
+  document.getElementById('chapter').value = '三位数乘两位数';
+  */
+});
+</script>
+
+</body>
+</html>
